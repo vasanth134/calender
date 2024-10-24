@@ -19,6 +19,7 @@ function Calendar() {
           start: "today prev,next",
           center: "title",
           end: "dayGridMonth, timeGridWeek, timeGridDay", 
+          
         }
       }
       dateClick={handleDateClick}
