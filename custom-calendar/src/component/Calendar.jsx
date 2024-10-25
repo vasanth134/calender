@@ -4,12 +4,8 @@ import DayGridPlugin from "@fullcalendar/daygrid";
 import TimeGridPlugin from "@fullcalendar/timegrid";
 import IntertactionPlugin from "@fullcalendar/interaction";
 function Calendar() {
-  
-  const handleDateClick = (arg) =>{
-    alert(arg.dateStr)
-  }
-  
-  
+  const eventInput = () => {};
+
   return (
     <>
       <FullCalendar
@@ -18,11 +14,9 @@ function Calendar() {
         headerToolbar={{
           start: "today prev,next",
           center: "title",
-          end: "dayGridMonth, timeGridWeek, timeGridDay", 
-          
-        }
-      }
-      dateClick={handleDateClick}
+          end: "dayGridMonth, timeGridWeek, timeGridDay",
+        }}
+        dateClick={eventInput}
         height={"98vh"}
       />
     </>
