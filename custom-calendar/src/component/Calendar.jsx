@@ -1,30 +1,45 @@
 // Calendar.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import EventInputForm from "./EventInputForm"; // Import the event input form
+import EventInputForm from "./EventInputForm";
+import { v4 as uuidv4 } from "uuid"; // For unique event IDs if needed
 
 function Calendar() {
-  const [events, setEvents] = useState([]); // State to store calendar events
-  const [showEventForm, setShowEventForm] = useState(false); // State to show/hide event form
-  const [selectedDate, setSelectedDate] = useState(""); // State to store the selected date
+  const [events, setEvents] = useState([]);
+  const [showEventForm, setShowEventForm] = useState(false);
+  const [selectedDate, setSelectedDate] = useState("");
+  const [editingEvent, setEditingEvent] = useState(null); // Holds event data if editing
 
-  // Handle date click to open the event form
+  // Handle date click to open the event form for a new event
   const handleDateClick = (info) => {
-    setSelectedDate(info.dateStr); // Set the selected date
-    setShowEventForm(true); // Show the event form
+    setSelectedDate(info.dateStr);
+    setEditingEvent(null); // Reset editing mode
+    setShowEventForm(true);
   };
 
-  // Function to add a new event
-  const addEvent = (title) => {
-    const newEvent = {
-      title,
-      start: selectedDate,
-      allDay: true,
-    };
-    setEvents([...events, newEvent]); // Add new event to the events array
+  // Handle event click to edit the existing event
+  const handleEventClick = (clickInfo) => {
+    const event = events.find((evt) => evt.id === clickInfo.event.id);
+    setSelectedDate(event.start.split("T")[0]); // Set selected date for the form
+    setEditingEvent(event); // Load event data for editing
+    setShowEventForm(true); // Open the event form
+  };
+
+  // Add or update the event
+  const addOrUpdateEvent = (eventData) => {
+    if (eventData.id) {
+      // Update existing event
+      setEvents(events.map((evt) => (evt.id === eventData.id ? eventData : evt)));
+    } else {
+      // Add new event with a unique ID
+      setEvents([
+        ...events,
+        { ...eventData, id: uuidv4() },
+      ]);
+    }
     setShowEventForm(false); // Hide the form after submission
   };
 
@@ -38,8 +53,9 @@ function Calendar() {
           center: "title",
           end: "dayGridMonth,timeGridWeek,timeGridDay",
         }}
-        dateClick={handleDateClick} // Trigger on date click
-        events={events} // Pass events to display on the calendar
+        dateClick={handleDateClick}
+        eventClick={handleEventClick} // Trigger on event click
+        events={events}
         height="98vh"
       />
 
@@ -47,8 +63,9 @@ function Calendar() {
       {showEventForm && (
         <EventInputForm
           selectedDate={selectedDate}
-          onAddEvent={addEvent} // Pass addEvent function as a prop
-          onClose={() => setShowEventForm(false)} // Close form on cancel
+          onAddEvent={addOrUpdateEvent} // Pass addOrUpdateEvent function
+          onClose={() => setShowEventForm(false)}
+          initialEventData={editingEvent} // Pass editing event data if in edit mode
         />
       )}
     </div>
