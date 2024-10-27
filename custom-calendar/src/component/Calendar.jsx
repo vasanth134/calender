@@ -1,13 +1,14 @@
+// Calendar.jsx
 import React, { useState } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
+import EventInputForm from "./EventInputForm"; // Import the event input form
 
 function Calendar() {
   const [events, setEvents] = useState([]); // State to store calendar events
   const [showEventForm, setShowEventForm] = useState(false); // State to show/hide event form
-  const [eventTitle, setEventTitle] = useState(""); // State for the event title input
   const [selectedDate, setSelectedDate] = useState(""); // State to store the selected date
 
   // Handle date click to open the event form
@@ -16,19 +17,15 @@ function Calendar() {
     setShowEventForm(true); // Show the event form
   };
 
-  // Handle form submission to add the event
-  const handleFormSubmit = (e) => {
-    e.preventDefault();
-    if (eventTitle) {
-      const newEvent = {
-        title: eventTitle,
-        start: selectedDate,
-        allDay: true,
-      };
-      setEvents([...events, newEvent]); // Add new event to the events array
-      setEventTitle(""); // Clear the input field
-      setShowEventForm(false); // Hide the form after submission
-    }
+  // Function to add a new event
+  const addEvent = (title) => {
+    const newEvent = {
+      title,
+      start: selectedDate,
+      allDay: true,
+    };
+    setEvents([...events, newEvent]); // Add new event to the events array
+    setShowEventForm(false); // Hide the form after submission
   };
 
   return (
@@ -46,21 +43,13 @@ function Calendar() {
         height="98vh"
       />
 
-      {/* Conditional rendering of the event input form */}
+      {/* Render the EventInputForm component conditionally */}
       {showEventForm && (
-        <div style={{ marginTop: "20px" }}>
-          <h3>Add Event for {selectedDate}</h3>
-          <form onSubmit={handleFormSubmit}>
-            <input
-              type="text"
-              placeholder="Event Title"
-              value={eventTitle}
-              onChange={(e) => setEventTitle(e.target.value)}
-              required
-            />
-            <button type="submit">Add Event</button>
-          </form>
-        </div>
+        <EventInputForm
+          selectedDate={selectedDate}
+          onAddEvent={addEvent} // Pass addEvent function as a prop
+          onClose={() => setShowEventForm(false)} // Close form on cancel
+        />
       )}
     </div>
   );
