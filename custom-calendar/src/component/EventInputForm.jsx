@@ -1,34 +1,49 @@
 // EventInputForm.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
-function EventInputForm({ selectedDate, onAddEvent, onClose }) {
-  const [eventTitle, setEventTitle] = useState(""); // Event title
-  const [startDate, setStartDate] = useState(selectedDate); // Start date
-  const [endDate, setEndDate] = useState(selectedDate); // End date
-  const [startTime, setStartTime] = useState(""); // Start time
-  const [endTime, setEndTime] = useState(""); // End time
-  const [notificationTime, setNotificationTime] = useState(""); // Notification time
+function EventInputForm({ selectedDate, onAddEvent, onClose, initialEventData }) {
+  const [eventTitle, setEventTitle] = useState("");
+  const [startDate, setStartDate] = useState(selectedDate);
+  const [endDate, setEndDate] = useState(selectedDate);
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
+  const [notificationTime, setNotificationTime] = useState("");
+  const [enableDailyNotifications, setEnableDailyNotifications] = useState(false); // New state for daily notifications
 
-  // Handle form submission
+  useEffect(() => {
+    if (initialEventData) {
+      setEventTitle(initialEventData.title);
+      setStartDate(initialEventData.start.split("T")[0]);
+      setStartTime(initialEventData.start.split("T")[1] || "");
+      setEndDate(initialEventData.end.split("T")[0]);
+      setEndTime(initialEventData.end.split("T")[1] || "");
+      setNotificationTime(initialEventData.notification || "");
+      setEnableDailyNotifications(initialEventData.enableDailyNotifications || false);
+    }
+  }, [initialEventData]);
+
   const handleFormSubmit = (e) => {
     e.preventDefault();
     if (eventTitle && startDate && endDate) {
       onAddEvent({
+        id: initialEventData?.id,
         title: eventTitle,
-        start: `${startDate}T${startTime || "00:00"}`, // Full start date and time
-        end: `${endDate}T${endTime || "23:59"}`, // Full end date and time
-        notification: notificationTime, // Store notification time
+        start: `${startDate}T${startTime || "00:00"}`,
+        end: `${endDate}T${endTime || "23:59"}`,
+        notification: notificationTime,
+        enableDailyNotifications, // Pass daily notifications setting
       });
       setEventTitle("");
       setStartTime("");
       setEndTime("");
       setNotificationTime("");
+      setEnableDailyNotifications(false);
     }
   };
 
   return (
     <div style={{ marginTop: "20px" }}>
-      <h3>Add Event for {selectedDate}</h3>
+      <h3>{initialEventData ? "Edit Event" : "Add Event"} for {selectedDate}</h3>
       <form onSubmit={handleFormSubmit}>
         <input
           type="text"
@@ -70,15 +85,23 @@ function EventInputForm({ selectedDate, onAddEvent, onClose }) {
         <div>
           <label>Notification Time:</label>
           <input
-            type="datetime-local"
+            type="time"
             value={notificationTime}
             onChange={(e) => setNotificationTime(e.target.value)}
           />
         </div>
-        <button type="submit">Add Event</button>
-        <button type="button" onClick={onClose}>
-          Cancel
-        </button>
+        <div>
+          <label>
+            <input
+              type="checkbox"
+              checked={enableDailyNotifications}
+              onChange={(e) => setEnableDailyNotifications(e.target.checked)}
+            />
+            Enable Daily Notifications Until Event End
+          </label>
+        </div>
+        <button type="submit">{initialEventData ? "Update Event" : "Add Event"}</button>
+        <button type="button" onClick={onClose}>Cancel</button>
       </form>
     </div>
   );

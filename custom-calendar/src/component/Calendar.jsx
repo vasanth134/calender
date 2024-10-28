@@ -5,42 +5,57 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import EventInputForm from "./EventInputForm";
-import { v4 as uuidv4 } from "uuid"; // For unique event IDs if needed
+import { v4 as uuidv4 } from "uuid";
 
 function Calendar() {
   const [events, setEvents] = useState([]);
   const [showEventForm, setShowEventForm] = useState(false);
   const [selectedDate, setSelectedDate] = useState("");
-  const [editingEvent, setEditingEvent] = useState(null); // Holds event data if editing
+  const [editingEvent, setEditingEvent] = useState(null);
 
-  // Handle date click to open the event form for a new event
   const handleDateClick = (info) => {
     setSelectedDate(info.dateStr);
-    setEditingEvent(null); // Reset editing mode
+    setEditingEvent(null);
     setShowEventForm(true);
   };
 
-  // Handle event click to edit the existing event
   const handleEventClick = (clickInfo) => {
     const event = events.find((evt) => evt.id === clickInfo.event.id);
-    setSelectedDate(event.start.split("T")[0]); // Set selected date for the form
-    setEditingEvent(event); // Load event data for editing
-    setShowEventForm(true); // Open the event form
+    setSelectedDate(event.start.split("T")[0]);
+    setEditingEvent(event);
+    setShowEventForm(true);
   };
 
-  // Add or update the event
   const addOrUpdateEvent = (eventData) => {
     if (eventData.id) {
-      // Update existing event
       setEvents(events.map((evt) => (evt.id === eventData.id ? eventData : evt)));
     } else {
-      // Add new event with a unique ID
       setEvents([
         ...events,
         { ...eventData, id: uuidv4() },
       ]);
     }
-    setShowEventForm(false); // Hide the form after submission
+    setShowEventForm(false);
+    if (eventData.notification && eventData.enableDailyNotifications) {
+      scheduleDailyNotifications(eventData);
+    }
+  };
+
+  // Schedule daily notifications until the end date
+  const scheduleDailyNotifications = (event) => {
+    const notificationTime = new Date(event.notification);
+    const endDate = new Date(event.end.split("T")[0]);
+    const now = new Date();
+
+    while (notificationTime <= endDate) {
+      if (notificationTime >= now) {
+        const delay = notificationTime - now;
+        setTimeout(() => {
+          alert(`Reminder: ${event.title} is scheduled for ${event.start}`);
+        }, delay);
+      }
+      notificationTime.setDate(notificationTime.getDate() + 1); // Move to the next day
+    }
   };
 
   return (
@@ -54,18 +69,17 @@ function Calendar() {
           end: "dayGridMonth,timeGridWeek,timeGridDay",
         }}
         dateClick={handleDateClick}
-        eventClick={handleEventClick} // Trigger on event click
+        eventClick={handleEventClick}
         events={events}
         height="98vh"
       />
 
-      {/* Render the EventInputForm component conditionally */}
       {showEventForm && (
         <EventInputForm
           selectedDate={selectedDate}
-          onAddEvent={addOrUpdateEvent} // Pass addOrUpdateEvent function
+          onAddEvent={addOrUpdateEvent}
           onClose={() => setShowEventForm(false)}
-          initialEventData={editingEvent} // Pass editing event data if in edit mode
+          initialEventData={editingEvent}
         />
       )}
     </div>
