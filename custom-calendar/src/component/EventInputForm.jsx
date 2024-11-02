@@ -1,6 +1,6 @@
 // EventInputForm.jsx
 import React, { useState, useEffect } from "react";
-
+import "../style/eventInput.css";
 function EventInputForm({ selectedDate, onAddEvent, onClose, initialEventData }) {
   const [eventTitle, setEventTitle] = useState("");
   const [startDate, setStartDate] = useState(selectedDate);
@@ -42,7 +42,7 @@ function EventInputForm({ selectedDate, onAddEvent, onClose, initialEventData })
   };
 
   return (
-    <div style={{ marginTop: "20px" }}>
+    <div className="boxEvent">
       <h3>{initialEventData ? "Edit Event" : "Add Event"} for {selectedDate}</h3>
       <form onSubmit={handleFormSubmit}>
         <input
