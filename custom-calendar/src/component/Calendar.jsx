@@ -1,5 +1,4 @@
-// Calendar.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
@@ -12,6 +11,7 @@ function Calendar() {
   const [showEventForm, setShowEventForm] = useState(false);
   const [selectedDate, setSelectedDate] = useState("");
   const [editingEvent, setEditingEvent] = useState(null);
+  const [taskCompletionStatus, setTaskCompletionStatus] = useState({});
 
   const handleDateClick = (info) => {
     setSelectedDate(info.dateStr);
@@ -27,35 +27,61 @@ function Calendar() {
   };
 
   const addOrUpdateEvent = (eventData) => {
+    const newEvents = [];
+    const startDate = new Date(eventData.start);
+    const endDate = new Date(eventData.end);
+    const daysBetween = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+
+    for (let i = 0; i < daysBetween; i++) {
+      const currentDate = new Date(startDate);
+      currentDate.setDate(startDate.getDate() + i);
+      const dayEvent = {
+        ...eventData,
+        id: uuidv4(),
+        start: `${currentDate.toISOString().split("T")[0]}T${eventData.start.split("T")[1]}`,
+        end: `${currentDate.toISOString().split("T")[0]}T${eventData.end.split("T")[1]}`,
+        allDay: true,
+        extendedProps: {
+          enableTaskCompletionCheckbox: eventData.enableDailyNotifications,
+        },
+      };
+      newEvents.push(dayEvent);
+    }
+
     if (eventData.id) {
-      setEvents(events.map((evt) => (evt.id === eventData.id ? eventData : evt)));
+      setEvents(events.filter((evt) => evt.id !== eventData.id).concat(newEvents));
     } else {
-      setEvents([
-        ...events,
-        { ...eventData, id: uuidv4() },
-      ]);
+      setEvents(events.concat(newEvents));
     }
+
     setShowEventForm(false);
-    if (eventData.notification && eventData.enableDailyNotifications) {
-      scheduleDailyNotifications(eventData);
-    }
   };
 
-  // Schedule daily notifications until the end date
-  const scheduleDailyNotifications = (event) => {
-    const notificationTime = new Date(event.notification);
-    const endDate = new Date(event.end.split("T")[0]);
-    const now = new Date();
+  const toggleTaskCompletion = (eventId, date) => {
+    setTaskCompletionStatus((prevStatus) => ({
+      ...prevStatus,
+      [`${eventId}-${date}`]: !prevStatus[`${eventId}-${date}`],
+    }));
+  };
 
-    while (notificationTime <= endDate) {
-      if (notificationTime >= now) {
-        const delay = notificationTime - now;
-        setTimeout(() => {
-          alert(`Reminder: ${event.title} is scheduled for ${event.start}`);
-        }, delay);
-      }
-      notificationTime.setDate(notificationTime.getDate() + 1); // Move to the next day
-    }
+  const renderEventContent = (eventInfo) => {
+    const date = eventInfo.event.startStr.split("T")[0];
+    return (
+      <div>
+        <b>{eventInfo.timeText}</b>
+        <i>{eventInfo.event.title}</i>
+        {eventInfo.event.extendedProps.enableTaskCompletionCheckbox && (
+          <div>
+            <input
+              type="checkbox"
+              checked={taskCompletionStatus[`${eventInfo.event.id}-${date}`] || false}
+              onChange={() => toggleTaskCompletion(eventInfo.event.id, date)}
+            />
+            <label>Task Completed</label>
+          </div>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -71,6 +97,7 @@ function Calendar() {
         dateClick={handleDateClick}
         eventClick={handleEventClick}
         events={events}
+        eventContent={renderEventContent}
         height="98vh"
       />
 

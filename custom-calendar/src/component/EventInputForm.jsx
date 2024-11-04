@@ -1,6 +1,6 @@
-// EventInputForm.jsx
 import React, { useState, useEffect } from "react";
 import "../style/eventInput.css";
+
 function EventInputForm({ selectedDate, onAddEvent, onClose, initialEventData }) {
   const [eventTitle, setEventTitle] = useState("");
   const [startDate, setStartDate] = useState(selectedDate);
@@ -8,7 +8,7 @@ function EventInputForm({ selectedDate, onAddEvent, onClose, initialEventData })
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [notificationTime, setNotificationTime] = useState("");
-  const [enableDailyNotifications, setEnableDailyNotifications] = useState(false); // New state for daily notifications
+  const [enableDailyNotifications, setEnableDailyNotifications] = useState(false);
 
   useEffect(() => {
     if (initialEventData) {
@@ -31,7 +31,7 @@ function EventInputForm({ selectedDate, onAddEvent, onClose, initialEventData })
         start: `${startDate}T${startTime || "00:00"}`,
         end: `${endDate}T${endTime || "23:59"}`,
         notification: notificationTime,
-        enableDailyNotifications, // Pass daily notifications setting
+        enableDailyNotifications,
       });
       setEventTitle("");
       setStartTime("");
@@ -97,7 +97,7 @@ function EventInputForm({ selectedDate, onAddEvent, onClose, initialEventData })
               checked={enableDailyNotifications}
               onChange={(e) => setEnableDailyNotifications(e.target.checked)}
             />
-            Enable Daily Notifications Until Event End
+            Enable Daily Task Completion
           </label>
         </div>
         <button type="submit">{initialEventData ? "Update Event" : "Add Event"}</button>
