@@ -12,14 +12,21 @@ app.post("/", async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const check = await User.findOne({ email });
-    if (check) {
-      res.json("exist");
-    } else {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      // If no user is found with the email
       res.json("notexist");
+    } else if (user.password !== password) {
+      // If email exists but password is incorrect
+      res.json("incorrect password");
+    } else {
+      // If both email and password are correct
+      res.json("exist");
     }
   } catch (err) {
-    res.json("notexist");
+    console.log("Error during login:", err);
+    res.status(500).json("Error occurred");
   }
 });
 
@@ -35,7 +42,8 @@ app.post("/signup", async (req, res) => {
       await User.create({ email, password });
     }
   } catch (err) {
-    res.json("notexist");
+    console.log("Error during signup:", err);
+    res.status(500).json("Error occurred");
   }
 });
 

@@ -1,9 +1,10 @@
+// Login.js
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 
 export default function Login() {
-  const history = useNavigate();
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -11,17 +12,20 @@ export default function Login() {
     e.preventDefault();
 
     try {
-      await axios.post("http://localhost:3000/", { email, password }).then((res) => {
-        if (res.data === "exist") {
-          history("/calendar", { state: { id: email } });
-        } else {
-          alert("User has not signed up");
-        }
-      }).catch((e) => {
-        alert("Wrong details");
-        console.log(e);
-      });
+      const res = await axios.post("http://localhost:3000/", { email, password });
+
+      if (res.data === "exist") {
+        // Navigate to calendar if login is successful
+        navigate("/calendar", { state: { id: email } });
+      } else if (res.data === "notexist") {
+        // Show alert if user is not registered
+        alert("User has not signed up");
+      } else if (res.data === "incorrect password") {
+        // Show alert if password is incorrect
+        alert("Incorrect password");
+      }
     } catch (e) {
+      alert("An error occurred during login");
       console.log(e);
     }
   }
@@ -30,13 +34,22 @@ export default function Login() {
     <>
       <h1>Login</h1>
       <form>
-        <input type="email" onChange={(e) => setEmail(e.target.value)} />
-        <input type="password" onChange={(e) => setPassword(e.target.value)} />
-        <input type="submit" onClick={submit} />
+        <input
+          type="email"
+          placeholder="Email"
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        <button type="submit" onClick={submit}>Login</button>
       </form>
-      <br />
       <p>or</p>
-      <Link to="/signUp"> Sign Up </Link>
+      <Link to="/signUp">Sign Up</Link>
     </>
   );
 }
