@@ -3,6 +3,7 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
+import { useLocation, useNavigate } from "react-router-dom";
 import EventInputForm from "./EventInputForm";
 import { v4 as uuidv4 } from "uuid";
 
@@ -30,7 +31,8 @@ function Calendar() {
     const newEvents = [];
     const startDate = new Date(eventData.start);
     const endDate = new Date(eventData.end);
-    const daysBetween = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+    const daysBetween =
+      Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
 
     for (let i = 0; i < daysBetween; i++) {
       const currentDate = new Date(startDate);
@@ -38,8 +40,12 @@ function Calendar() {
       const dayEvent = {
         ...eventData,
         id: uuidv4(),
-        start: `${currentDate.toISOString().split("T")[0]}T${eventData.start.split("T")[1]}`,
-        end: `${currentDate.toISOString().split("T")[0]}T${eventData.end.split("T")[1]}`,
+        start: `${currentDate.toISOString().split("T")[0]}T${
+          eventData.start.split("T")[1]
+        }`,
+        end: `${currentDate.toISOString().split("T")[0]}T${
+          eventData.end.split("T")[1]
+        }`,
         allDay: true,
         extendedProps: {
           enableTaskCompletionCheckbox: eventData.enableDailyNotifications,
@@ -49,7 +55,9 @@ function Calendar() {
     }
 
     if (eventData.id) {
-      setEvents(events.filter((evt) => evt.id !== eventData.id).concat(newEvents));
+      setEvents(
+        events.filter((evt) => evt.id !== eventData.id).concat(newEvents)
+      );
     } else {
       setEvents(events.concat(newEvents));
     }
@@ -66,15 +74,25 @@ function Calendar() {
 
   const renderEventContent = (eventInfo) => {
     const date = eventInfo.event.startStr.split("T")[0];
+
+  const location = useLocation()  
+
+
+                                                                                           // return
     return (
       <div>
+
+        <h1>Have a Great Day {location.state.id}</h1>
+
         <b>{eventInfo.timeText}</b>
         <i>{eventInfo.event.title}</i>
         {eventInfo.event.extendedProps.enableTaskCompletionCheckbox && (
           <div>
             <input
               type="checkbox"
-              checked={taskCompletionStatus[`${eventInfo.event.id}-${date}`] || false}
+              checked={
+                taskCompletionStatus[`${eventInfo.event.id}-${date}`] || false
+              }
               onChange={() => toggleTaskCompletion(eventInfo.event.id, date)}
             />
             <label>Task Completed</label>
